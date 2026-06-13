@@ -1,7 +1,7 @@
 const dns = require("node:dns");
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -35,7 +35,11 @@ async function run() {
 
     app.post('/api/jobs', async(req, res) => {
         const jobs = req.body
-        const result = await jobsCollection.insertOne(jobs)
+        const createdJobs = {
+          ...jobs,
+          createdAt :  new Date()
+        }
+        const result = await jobsCollection.insertOne(createdJobs)
         res.json(result)
     })
     app.get('/api/jobs', async(req, res)=> {
@@ -43,8 +47,12 @@ async function run() {
     res.json(result)
    })
     app.post('/api/companies', async(req, res) => {
-        const jobs = req.body
-        const result = await companyCollection.insertOne(jobs)
+        const company = req.body
+        const createdCompanies = {
+          ...company,
+          createdAt : new Date()
+        }
+        const result = await companyCollection.insertOne(createdCompanies)
         res.json(result)
     })
     app.get('/api/companies', async(req, res)=> {
@@ -58,6 +66,29 @@ async function run() {
       query.recruiterId = req.query.recruiterId
     };
     const result = await companyCollection.findOne(query);
+    res.json(result)
+   });
+   app.get('/api/my/jobs', async (req, res)=> {
+    const query = {};
+    if(req.query.companyId) {
+      query.companyId = req.query.companyId
+    };
+    if (req.query.status) {
+      query.status = req.query.status
+    }
+    console.log(query)
+   const result = await jobsCollection.find(query).toArray();
+   res.json({
+  success: true,
+  data: result,
+})
+   });
+   app.get('/api/my/jobs/:id', async (req, res) => {
+    const id = req.params.id
+    const query = {
+      _id : new ObjectId(id)
+    }
+    const result = await jobsCollection.findOne(query)
     res.json(result)
    })
   } finally {
