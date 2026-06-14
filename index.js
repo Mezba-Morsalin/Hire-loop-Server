@@ -31,6 +31,7 @@ async function run() {
     const db = client.db('hireloop_DB')
     const jobsCollection = db.collection('jobs');
     const companyCollection = db.collection('companies');
+    const applicantsCollection = db.collection('applicants');
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     app.post('/api/jobs', async(req, res) => {
@@ -41,11 +42,11 @@ async function run() {
         }
         const result = await jobsCollection.insertOne(createdJobs)
         res.json(result)
-    })
+    });
     app.get('/api/jobs', async(req, res)=> {
     const result = await jobsCollection.find().toArray()
     res.json(result)
-   })
+   });
     app.post('/api/companies', async(req, res) => {
         const company = req.body
         const createdCompanies = {
@@ -81,7 +82,7 @@ async function run() {
    res.json({
   success: true,
   data: result,
-})
+});
    });
    app.get('/api/my/jobs/:id', async (req, res) => {
     const id = req.params.id
@@ -98,7 +99,21 @@ async function run() {
     }
     const result = await companyCollection.findOne(query)
     res.json(result)
-   })
+   });
+
+   app.post('/api/applicants', async(req, res) => {
+        const applicants = req.body
+        const createdApplicants = {
+          ...applicants,
+          createdAt :  new Date()
+        }
+        const result = await applicantsCollection.insertOne(createdApplicants)
+        res.json(result)
+    });
+    app.get('/api/applicants', async(req, res)=> {
+    const result = await applicantsCollection.find().toArray()
+    res.json(result)
+   });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
