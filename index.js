@@ -32,6 +32,7 @@ async function run() {
     const jobsCollection = db.collection('jobs');
     const companyCollection = db.collection('companies');
     const applicantsCollection = db.collection('applicants');
+    const plansCollection = db.collection('plans')
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     app.post('/api/jobs', async(req, res) => {
@@ -111,9 +112,25 @@ async function run() {
         res.json(result)
     });
     app.get('/api/applicants', async(req, res)=> {
-    const result = await applicantsCollection.find().toArray()
+      const query = {}
+      if (req.query.applicantId) {
+        query.applicantId = req.query.applicantId
+      }
+      if (req.query.jobId) {
+        query.jobId =  req.query.jobId
+      }
+    const result = await applicantsCollection.find(query).toArray()
     res.json(result)
    });
+
+   app.get('/api/plans',async (req, res)=> {
+    const query = {}
+    if(req.query.plan_id) {
+      query.id = req.query.plan_id
+    }
+    const result = await plansCollection.findOne(query)
+    res.json(result)
+   })
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
