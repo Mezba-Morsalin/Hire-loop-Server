@@ -33,6 +33,8 @@ async function run() {
     const companyCollection = db.collection('companies');
     const applicantsCollection = db.collection('applicants');
     const plansCollection = db.collection('plans')
+    const subscriptionCollection = db.collection('subscriptions')
+    const userCollection = db.collection('user')
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     app.post('/api/jobs', async(req, res) => {
@@ -44,6 +46,35 @@ async function run() {
         const result = await jobsCollection.insertOne(createdJobs)
         res.json(result)
     });
+
+    app.post('/api/subscriptions', async (req, res) => {
+  const subscriptions = req.body;
+
+  const createdSubscription = {
+    ...subscriptions,
+    createdAt: new Date(),
+  };
+
+  await subscriptionCollection.insertOne(createdSubscription);
+
+  const filter = {
+    email: subscriptions.email,
+  };
+
+  const updateDocument = {
+    $set: {
+      plan: subscriptions.planId,
+    },
+  };
+
+  const updatedResult = await userCollection.updateOne(
+    filter,
+    updateDocument
+  );
+
+  res.json(updatedResult);
+});
+
     app.get('/api/jobs', async(req, res)=> {
     const result = await jobsCollection.find().toArray()
     res.json(result)
