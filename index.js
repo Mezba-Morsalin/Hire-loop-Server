@@ -101,6 +101,20 @@ async function run() {
     const result = await companyCollection.findOne(query);
     res.json(result)
    });
+
+   app.patch('/api/companies/:id', async (req, res)=> {
+    const id = req.params;
+    const updateCompany = req.body;
+    const filter = {_id : new ObjectId(id)}
+    const updateDoc = {
+      $set : {
+        status : updateCompany.status
+      }
+    }
+    const result = await companyCollection.updateOne(filter, updateDoc)
+    res.json(result)
+   })
+
    app.get('/api/my/jobs', async (req, res)=> {
     const query = {};
     if(req.query.companyId) {
