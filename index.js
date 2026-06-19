@@ -89,9 +89,18 @@ async function run() {
         res.json(result)
     })
     app.get('/api/companies', async(req, res)=> {
-    const result = await companyCollection.find().toArray()
-    res.json(result)
-   })
+    const cursor = await companyCollection.find()
+    const companies = await cursor.toArray()
+
+    for (const company of companies) {
+      const filter = {
+        companyId : company._id.toString()
+      }
+      const jobCount = await jobsCollection.countDocuments(filter);
+      company.jobCount = jobCount
+    }
+    res.json(companies)
+   });
 
    app.get('/api/my/companies', async (req, res)=> {
     const query = {};
@@ -102,18 +111,27 @@ async function run() {
     res.json(result)
    });
 
-   app.patch('/api/companies/:id', async (req, res)=> {
-    const id = req.params;
-    const updateCompany = req.body;
-    const filter = {_id : new ObjectId(id)}
-    const updateDoc = {
-      $set : {
-        status : updateCompany.status
-      }
-    }
-    const result = await companyCollection.updateOne(filter, updateDoc)
-    res.json(result)
-   })
+   app.patch('/api/companies/:id', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const filter = {
+    _id: new ObjectId(id),
+  };
+
+  const updateDoc = {
+    $set: {
+      status,
+    },
+  };
+
+  const result = await companyCollection.updateOne(
+    filter,
+    updateDoc
+  );
+
+  res.json(result);
+});
 
    app.get('/api/my/jobs', async (req, res)=> {
     const query = {};
